@@ -1,0 +1,824 @@
+<?php
+session_start();
+
+if(!isset($_SESSION['id'])) //Si pas d'utilisateur connecté on renvoie vers la connexion
+{
+	header('Location: connexion.php');
+	exit();
+}
+$titre="Trombinoscope - Administration"; //titre de la page (utilisé dans debut.php)
+include("includes/debut.php"); // Inclusion du debut de page commun a toutes les pages
+include("includes/connexionDb.php"); //Connexion BDD
+
+
+?>
+
+ <script> // Jquery pour classer les tableaux
+ $(document).ready(function() 
+ { 
+ 	$("#tableListStaff").tablesorter({
+ 		dateFormat : "ddmmyyyy"
+ 	});
+
+ } 
+ );
+</script>
+
+
+
+<?php
+if ($id!=0){  //Si une session est ouverte
+
+/////////////////////
+/////TRAITEMENTS/////
+/////////////////////
+
+	if (isset($_GET['nav']) && $_GET['nav'] == "newAddStaff") {
+		?>
+
+		<script>
+
+			$(function () {
+			$('#addStaff-tab').tab('show') // On redirige vers l'onglet d'ajout de personnel
+		})
+
+	</script>
+	<?php
+}
+
+
+
+	if (isset($_GET['nav']) && $_GET['nav'] == "addStaff") { // si on a validé le formulaire d'ajout de personnel
+
+	
+
+		// si doublon mail -> erreur
+	$res = $conn->prepare("SELECT email FROM staff ");
+	$res->execute();
+	$resultlistMail = $res->fetchall();
+
+	if (!empty($_POST['email'])) {
+		foreach ($resultlistMail as $key ) {
+			if ($_POST['email'] == $key['email']) {
+				$InsertStaffError[] = "Le mail existe déjà";
+			}
+		}
+	}
+
+	if (empty($_POST['name'])) {
+		$InsertStaffError[] = "Champ nom vide ou incorrect";
+	}
+	if (empty($_POST['firstname'])) {
+		$InsertStaffError[] = "Champ prénom vide ou incorrect";
+	}
+	if (empty($_POST['job'])) {
+		$InsertStaffError[] = "Champ fonction vide ou incorrect";
+	}
+	if (empty($_POST['email'])) {
+		$InsertStaffError[] = "Champ mail vide ou incorrect";
+	}
+
+	if(empty($InsertStaffError)){	
+
+		$last_id = insertStaff($conn);		
+
+		if (isset($last_id)){
+
+			addPicture($conn, $last_id);
+		}
+	}
+
+	?>
+	<script>
+
+		$(function () {
+			$('#addStaff-tab').tab('show') // On redirige vers l'onglet d'ajout de personnel
+		})
+
+	</script>
+
+	<?php
+
+}
+
+if (isset($_GET['supprStaff']) && !empty($_GET['supprStaff'])) {
+
+	deleteUser($conn, $_GET['supprStaff']);
+	$pictureExist = pictureExist($conn, $_GET['supprStaff']);
+
+	if (!empty($pictureExist)) {
+		deleteUserPicture($conn, $_GET['supprStaff']);
+	}
+
+	?>
+
+	<script>
+
+		$(function () {
+			$('#listStaff-tab').tab('show') // On redirige vers l'onglet d'ajout de personnel
+		})
+
+	</script>
+
+	<?php
+}
+
+if (isset($_GET['resetPic']) && !empty($_GET['resetPic'])) {
+
+	$pictureExist = pictureExist($conn, $_GET['resetPic']);
+
+	if (!empty($pictureExist)) {
+		resetUserPicture($conn, $_GET['resetPic']);
+	}
+
+	?>
+
+	<script>
+
+		$(function () {
+			$('#listStaff-tab').tab('show') // On redirige vers l'onglet d'ajout de personnel
+		})
+
+	</script>
+
+	<?php
+}
+if (isset($_GET['listStaff']) && !empty($_GET['listStaff'])) {
+
+	?>
+
+	<script>
+
+		$(function () {
+			$('#listStaff-tab').tab('show') // On redirige vers l'onglet d'ajout de personnel
+		})
+
+	</script>
+
+	<?php
+}
+
+if (isset($_GET['nav']) && $_GET['nav'] == "update") {
+
+	?>
+	<script>
+
+		$(function () {
+		$('#profile-tab').tab('show') // On redirige vers l'onglet de mise a jours de la table
+	})
+
+</script>
+
+<?php
+}
+?>
+
+</body>
+<?php
+}
+?>
+
+
+
+
+
+
+
+
+<body>
+
+	<div class="container">
+		<div class="animate two"> <!-- Titre Usertempo animé -->
+
+			<h1><span id="user">DSDEN 33</span>&nbsp;<span>T</span><span>r</span><span>o</span><span>m</span><span>b</span><span id="last">i</span></h1>
+
+		</div>
+	</div>
+
+	<span id="conn"><?= $msgConn; ?></span> <!-- Msg de confirmation si connexion ok ou non-->
+	<br>Afficher l'accueil du site : <a class="btnImport" style="font-size:28px;padding:2px 10px;margin-top: 1em;"  target="_blank" href="index.php"><i class="fa fa-home"></i></a>
+	<div style="margin-top: 5em;"></div>
+
+
+	<!-- NAVIGATION -->
+
+	<ul class="nav nav-tabs" id="myTab" role="tablist">
+		<li class="nav-item">
+			<a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Accueil</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link " id="addStaff-tab" data-toggle="tab" href="#addStaff" role="tab" aria-controls="addStaff" aria-selected="false">Ajouter un Personnel </a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link " id="listStaff-tab" data-toggle="tab" href="#listStaff" role="tab" aria-controls="listStaff" aria-selected="false">Liste du personnel</a>
+		</li>
+		<!--
+		<li class="nav-item">
+			<a class="nav-link " id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Mise à jour </a>
+		</li>
+		-->
+		<li class="nav-item">
+			<a class="nav-link " id="contact-tab" data-toggle="tab" href="#contact" role="tab" aria-controls="contact" aria-selected="false">Configuration</a>
+		</li>
+	</ul>
+
+	<!-- div tabcontent contient les 3 tab -->
+	<div class="tab-content" id="myTabContent"> 
+
+
+		<!-- *** Accueil Tab *** -->
+		<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab"> 
+			
+			Administration du trombinoscope interne de la DSDEN 33
+
+		</div>
+
+		<!-- *** Tab Ajout de personnel *** -->
+		<div class="tab-pane fade" id="addStaff" role="tabpanel" aria-labelledby="addStaff-tab"> 
+			
+			<?php 
+
+
+
+			if (!isset($_GET['nav']) || $_GET['nav']!="addStaff" || !empty($InsertStaffError)){		
+
+
+				if (isset($InsertStaffError) && count($InsertStaffError)>0) {
+					
+					?>
+					<div id="erreurStaffInsert">
+						<h3>Erreurs : </h3>
+						<?php
+						for ($i=0; $i < count($InsertStaffError) ; $i++) { 
+
+							echo "<p>". $InsertStaffError[$i] ."</p>";
+
+						}	
+						?>
+					</div>
+					<?php	
+
+				}
+
+				?>
+
+
+
+
+
+
+				<form style="max-width: 70%;" id="addStaffForm" enctype="multipart/form-data" method="post" action="?nav=addStaff">
+
+					<h4 style="margin-bottom: 2em;">Ajouter un personnel de la DSDEN 33</h4>
+
+
+					<div class="form-group row">						
+						<label class="col-2 col-form-label" for="firstname">Prénom</label>
+						<div class="col-10">
+							<input <?=(!empty($_POST['firstname']))?'value="'.$_POST['firstname'].'"':' '; ?> class="form-control" name="firstname" type="text" id="firstname" placeholder="Prénom.." required>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-2 col-form-label" for="name">Nom</label>
+						<div class="col-10">
+							<input <?=(!empty($_POST['name']))?'value="'.$_POST['name'].'"':' '; ?> class="form-control" name="name" type="text" id="name" placeholder="Nom.." required>
+						</div>
+					</div>
+
+					<div class="form-group row">
+						<label class="col-2 col-form-label" for="job">Fonction</label>
+						<div class="col-10">    
+							<textarea class="form-control" name="job" id="job" placeholder="Fonction.." ><?=(!empty($_POST['job']))? $_POST['job']:' '; ?> </textarea>						
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-2 col-form-label" for="email">Email</label>
+						<div class="col-10">
+							<input  <?=(!empty($_POST['email']))?'value="'.$_POST['email'].'"':' '; ?> class="form-control" name="email" type="text" id="email" placeholder="adresse@ac-bordeaux.fr.." required>
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-2 col-form-label" for="telint">Téléphone Interne</label>
+						<div class="col-10">
+							<input  <?=(!empty($_POST['telint']))?'value="'.$_POST['telint'].'"':' '; ?> class="form-control" name="telint" type="text" id="telint" placeholder="" >
+						</div>
+					</div>
+					<div class="form-group row">
+						<label class="col-2 col-form-label" for="telext">Téléphone Externe</label>
+						<div class="col-10">
+							<input <?=(!empty($_POST['telext']))?'value="'.$_POST['telext'].'"':' '; ?> class="form-control" name="telext" type="text" id="telext" placeholder="" >
+						</div>
+					</div>					
+					<div class="form-group row">
+						<label class="col-2 col-form-label" for="offnbr">Numéro de Bureau</label>
+						<div class="col-10">
+							<input  <?=(!empty($_POST['offnbr']))?'value="'.$_POST['offnbr'].'"':' '; ?> class="form-control" name="offnbr" type="text" id="offnbr" placeholder="" >
+						</div>
+					</div>			
+
+					<div class="form-group row">
+						<label class="col-2 col-form-label" for="serv_id">Service</label>
+						<div class="col-10">
+							<select class="form-control" id="serv_id" name="serv_id" required>
+								<option disabled selected value> -- selectionnez un service -- </option>
+								<?php 
+
+								$divMeres = showDivMeres($conn);
+								$divFilles = showDivFilles($conn);
+								print_r($divFilles);
+
+
+								foreach ($divMeres as $key2 ) {
+
+									echo "<option value='".$key2['id']."''>".$key2['off_name']."</option>";
+
+									foreach ($divFilles as $key3) {
+
+										if ($key3['div_id']== $key2['id']) {
+
+											echo "<option value='".$key3['id']."''>&nbsp - &nbsp;".$key3['off_name']."</option>";
+
+										}
+									}
+								}
+								?>
+
+							</select>
+						</div>
+					</div>
+
+					<?php include("./includes/formPhoto.php"); ?>
+
+					<div style="text-align:center; margin-top: 2em;">
+						<input class="btnImport" type="submit" value="Ajouter au trombinoscope !" >
+					</div>
+				
+
+
+			</form>
+
+			<?php
+
+			
+		}
+
+		else{
+
+			echo "<p style=\"font-weight:bold; font-size :2em\">Inscription effectuée : </p>
+			<p style=\"font-weight:bold;\">" . ucfirst($_POST['firstname']) ." ". ucfirst($_POST['name']) ."</p>
+
+			<table id=\"resume\">
+
+				<tr style=\"border-bottom:1px solid #999999;padding:5px;\">
+					<td>Fonction : </td><td>".$_POST['job']."</td>
+				</tr>
+				<tr style=\"border-bottom:1px solid #999999;padding:5px;\">
+					<td>Mail : </td><td>".$_POST['email']."</td>
+				</tr>
+				<tr style=\"border-bottom:1px solid #999999;padding:5px;\">
+					<td>Téléphone : </td><td>".$_POST['telext']."</td>
+				</tr>
+				<tr style=\"border-bottom:1px solid #999999;padding:5px;\">
+					<td>Bureau : </td><td>".$_POST['offnbr']."</td>
+				</tr>
+				<tr style=\"border-bottom:1px solid #999999;padding:5px;\">
+					<td>Photo : </td><td><img style=\"max-width:150px;\" src=".$_POST['croppedPicture']."></td>
+				</tr>
+
+			</table>
+
+
+			<br><a class=\"btnImport\" href=\"trombiback.php?nav=newAddStaff\">Nouvelle inscription <i class=\"fa fa-redo\"></i></a>
+	
+			";
+		}
+		
+
+
+
+		?>
+
+	</div>
+
+
+	<!-- *** Tab Liste personnel  *** -->
+
+	<div class="tab-pane fade" id="listStaff" role="tabpanel" aria-labelledby="listStaff-tab"> 
+
+
+		<?php 
+
+		$listStaff = showStaff($conn);
+
+
+
+
+
+
+
+		?>
+
+
+
+		<table id="tableListStaff"  class="table table-striped" style="margin: auto;">
+			<thead>
+
+				<tr>
+					<th scope="col">Nom&nbsp;<i class="fa fa-sort" aria-hidden="true"></i></th>
+					<th scope="col">Prénom&nbsp;<i class="fa fa-sort" aria-hidden="true"></i></th>
+					<th scope="col">Email&nbsp;<i class="fa fa-sort" aria-hidden="true"></i></th>
+					<th scope="col">Mission(s)</th>
+					<th scope="col">Télephone Externe&nbsp;<i class="fa fa-sort" aria-hidden="true"></i></th>
+					<th scope="col">Télephone Interne&nbsp;<i class="fa fa-sort" aria-hidden="true"></i></th>
+					<th scope="col">Service&nbsp;<i class="fa fa-sort" aria-hidden="true"></i></th>
+					<th scope="col">N° Bureau&nbsp;<i class="fa fa-sort" aria-hidden="true"></i></th>
+					<th scope="col">Date d'ajout&nbsp;<i class="fa fa-sort" aria-hidden="true"></i></th>
+					<th scope="col">Modifier</th>
+					<th scope="col">Photo</th>		
+					<th scope="col">Supprimer</th>					
+				</tr>
+			</thead>
+			<tbody>
+				<?php 
+				$defaultImg = "default.png";
+				foreach ($listStaff as $key) {
+
+					?>
+
+					<tr style="max-height: 20px !important;">
+
+						<td style="max-width: 10em !important;"><?= $key['name'] ?></td>
+						<td style="max-width: 10em !important;"><?= $key['firstname'] ?></td>
+						<td style="max-width: 200px !important;"><?= $key['email'] ?></td>
+						<td  style="max-width: 200px !important;"><div style="height: 100px !important;overflow:auto;"><?= htmlspecialchars($key['job']) ?></div></td>
+						<td><?= $key['tel_ext'] ?></td>
+						<td>
+							<div style="max-width: 70px;"><?= $key['tel_int'] ?>
+								
+							</div>
+						</td>
+						<td>
+							<div style="width: 25em;height: 10em;overflow:auto;">
+								<?= "<span>".$key['off_name']."</span><br><span style='font-style:italic'>".$key['descr']."</span><br><small>- id du service :".$key['serv_id']." <br>- id du service parent : ".$key['div_id']."</small>";	?>
+							</div>
+						</td>
+
+						<td>
+							<div style="max-width: 70px;"><?= $key['off_nbr'] ?><div>
+						</td>
+
+						<td >
+							<?= $key['add_date'] ?>
+						</td>
+
+						<td>
+							<a class="modifBtn" href="modifierStaff.php?login=<?= $key['id'];?>">Modifier<br>infos/photo</a>
+						</td>
+
+
+						<td >
+							<img style="max-height: 120px;border: 1px solid black;" src="../img/<?=( !empty($key['picture']))? $key['picture']:$defaultImg; ?>" alt="image"><br>
+							<a id="resetLink" class="modifBtn" onclick="return confirm('Cette action supprimera la photo existante et la remplacera par la photo par défaut : Êtes-vous sûr ?')" href="trombiback.php?resetPic=<?= $key['id'];?>">Suppr. photo</a>
+						</td>
+						<td ><a id="deleteLink" class="modifBtn" onclick="return confirm('Voulez vous vraiment SUPPRIMER DEFINITIVEMENT cet utilisateur ET sa photo ?')" href="trombiback.php?supprStaff=<?= $key['id'];?>">SUPPRIMER UTILISATEUR</a></td>
+
+
+					</tr>
+					<?php
+
+				}								
+
+				?>
+
+
+			</tbody>
+		</table>
+	</div>
+
+
+
+
+
+
+	<!-- *** Tab Mise a jours *** -->
+	<!--
+	<div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+	-->
+
+		<?php /*
+
+
+		if (isset( $_FILES['csvFile'])) {
+
+			$res = $conn->prepare("SELECT DISTINCT name FROM staff GROUP BY name");
+			$res->execute();
+			$resultlist = $res->fetchall();
+
+
+			extract(filter_input_array(INPUT_POST));
+			$fichier= $_FILES['csvFile']['name'];
+
+			if ($fichier) {
+				$fp = fopen($_FILES['csvFile']['tmp_name'], 'r');
+			}
+
+			else{ // fichier inconnue
+				?>
+				<p style="text-align:center"> Importation échouée - Pas de chemin valide</p>
+				<?php
+			}
+			if (($entete = fgetcsv($fp, 1024, ";")) !== FALSE) {
+
+				if ($entete[0]!="nom" || $entete[1]!="prenom" || $entete[2]!="mail" || $entete[3]!="fonction" || $entete[4]!="telephone" || $entete[5]!="service" || $entete[6]!="tel interne" || $entete[7]!="bureau") {
+					$erreurfichier[] = "<p><b>ERREUR RTFM : </b>Veuilez choisir un fichier au format correct</p><small>Merci d'arrêter de faire n'importe quoi.</small><p></p> <br><small><a class=\"newImport\" href=\"trombiback.php?nav=update\">>>Je retente ma chance !</a></small> ";
+				}		
+
+
+			}
+
+			if (!empty($erreurfichier)) {
+				for ($i=0; $i < count($erreurfichier) ; $i++) { 
+
+					echo '<div style="text-align:center;margin-top:5em">'.$erreurfichier[$i].'</div>';
+
+				}
+
+			}
+			else{
+
+					// on declare la variable cpt qui permettra de compter le nombre d'neregistrrdcements réalisés
+
+				///////////////////////////////
+				//////////////////////////////
+				////////////////$message = utf8_decode(stripslashes($HTTP_POST_VARS["message"]));
+/////////////////
+				/////////////////////////////
+				//////////////////////////////
+				$cpt = 0; ?>
+
+				<p style="text-align: center">Importation Terminée</p>
+
+
+			<?php // On importe
+			if ($fichier) {
+
+				while (!feof($fp)) {
+
+
+
+					$ligne = fgets($fp, 8192);  // lit chaque ligne jusque taille max en octet
+
+					$liste = explode(";", $ligne);
+					?>
+					<?php
+					$table = filter_input(INPUT_POST, 'csvFile');
+
+					$liste[0] = ( isset($liste[0]) ) ? $liste[0] : Null;
+					$liste[1] = ( isset($liste[1]) ) ? $liste[1] : Null;
+					$liste[2] = ( isset($liste[2]) ) ? $liste[2] : Null;
+					$liste[3] = ( isset($liste[3]) ) ? $liste[3] : Null;
+					$liste[4] = ( isset($liste[4]) ) ? $liste[4] : Null;
+					$liste[5] = ( isset($liste[5]) ) ? $liste[5] : Null;
+					$liste[6] = ( isset($liste[6]) ) ? $liste[6] : Null;
+					$liste[7] = ( isset($liste[7]) ) ? $liste[7] : Null;
+
+					$champs1 = $liste[0];
+					$champs2 = $liste[1];
+					$champs3 = $liste[2];
+					$champs4 = $liste[3];
+					$champs5 = $liste[4];
+					$champs6 = $liste[5];
+					$champs7 = $liste[6];
+					$champs8 = $liste[7];
+
+					echo $ligne."<br><hr>FIN DE LIGNE<br><hr>";
+					$tabUpdate[]=$liste;
+
+
+					if ($champs1!= '' && !in_array($champs1, $resultlist)) {
+
+						$cpt++;
+
+						
+						$sql =$conn->prepare('
+							INSERT INTO staff (name, firstname, email, job, tel_ext, serv_id, tel_int, off_nbr)
+							VALUES (:name, :firstname, :email, :job, :tel_ext, :serv_id, :tel_int, :off_nbr)
+							ON DUPLICATE KEY
+							UPDATE id = id, name = name, firstname = firstname, email = email, job = job, tel_ext = tel_ext, serv_id = serv_id, tel_int = tel_int, off_nbr = off_nbr');
+
+						$sql->bindValue(':name',$champs1, PDO::PARAM_STR);
+						$sql->bindValue(':firstname',$champs2, PDO::PARAM_STR);
+						$sql->bindValue(':email',$champs3, PDO::PARAM_STR);
+						$sql->bindValue(':job',$champs4, PDO::PARAM_STR);			    
+						$sql->bindValue(':tel_ext',$champs5, PDO::PARAM_STR);
+						$sql->bindValue(':serv_id', $champs6, PDO::PARAM_INT);
+						$sql->bindValue(':tel_int',$champs7, PDO::PARAM_STR);
+						$sql->bindValue(':off_nbr',$champs8, PDO::PARAM_STR);
+
+						$sql->execute();
+					    	//echo 'valeurs :'.$liste[0].'<br>'.$liste[1].'<br>'.$liste[2].'<br>'.$liste[3].'<br>'.$liste[4];
+
+					}
+
+
+				}
+			}
+
+			//fermeture du fichier
+
+			fclose($fp);
+			?>
+
+
+
+
+			<?php			
+
+
+
+			for ($i=0; $i < count($resultlist) ; $i++) { 
+				$loginList['name'][] = $resultlist[$i]['name'];
+			}
+
+			?>
+
+			<?php 
+
+			for ($i=0; $i < count($tabUpdate); $i++) { 
+
+				if (in_array($tabUpdate[$i][0], $loginList['name'])) {
+
+
+
+					$doublons['nom'][] = $tabUpdate[$i][0];
+					$doublons['prenom'][] = $tabUpdate[$i][1];
+					$doublons['mail'][] = $tabUpdate[$i][2];
+					$doublons['fonction'][] = $tabUpdate[$i][3];
+					$doublons['telephone'][] = $tabUpdate[$i][4];
+					$doublons['bureau'][] = $tabUpdate[$i][5];
+
+				}
+
+				elseif ($tabUpdate[$i][0] != ""){
+
+
+					$tabAdd['nom'][] = $tabUpdate[$i][0];
+					$tabAdd['prenom'][] = $tabUpdate[$i][1];
+					$tabAdd['mail'][] = $tabUpdate[$i][2];
+					$tabAdd['fonction'][] = $tabUpdate[$i][3];
+					$tabAdd['telephone'][] = $tabUpdate[$i][4];
+					$tabAdd['bureau'][] = $tabUpdate[$i][5];
+
+				}
+
+
+			}
+
+			print_r($loginList);
+
+
+
+	include("./includes/resultimport.php"); // Log des lignes enregistrées et ignorées
+
+	?>			
+
+
+
+
+
+
+	
+
+
+
+
+	<?php
+
+
+
+}
+
+
+
+
+}
+
+else {
+	?>
+
+	<h4>Mettre à jour la table utilsateur de libertempo</h4>
+
+	<p> Cette section vous permet de mettre à jour la base utilisateurs de Libertempo en important un fichier CSV</p>
+	<p>Le fichier doit respecter une certaine structure, comme spécifié dans la<a target="_blank" href="media/docUsertempo.pdf"> documentation</a></p>
+
+
+
+
+
+
+
+
+
+
+	<form  id="formFile" method="post" enctype="multipart/form-data" action="?nav=update"><!-- ?nav=update -->
+		<div id="formGrpFile" class="form-group">
+			<label for="File1">Veuillez choisir un fichier CSV : </label>
+			<input id="File1" class="form-control-file" type="file" name="csvFile" value="table">
+
+
+		</div><br>
+
+		<!--
+		<input type="submit" name="submit" value="Importer">
+	-->
+	<button class="btnImport" type="submit" name="submit" class="">Importer ! </button>
+
+
+</form>
+<?php 
+}
+*/
+?>
+<!--
+</div>
+--> <!-- fin div tab MAJ -->
+
+
+<div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+
+	<h4>Configuration de l'application Trombi</h4>
+
+
+	Configuration actuelle : <br><br>
+
+	<ul>
+		<li>Nom du serveur :  <span class="config"><?= U_SERV_NAME ?></span></li>
+		<li>Nom d'utilisateur :  <span class="config"><?= U_USERNAME ?></span></li>
+		<li>MDP :   <span class="config"><?= U_MDP ?></span class="config"></li>
+		<li>Nom de la base :  <span class="config"><?= U_DB_NAME ?></span></li>
+
+	</ul>
+
+	<p>Ces valeurs sont modifiables dans le fichier includes/constants.php</p>
+
+
+
+
+
+
+
+
+
+
+	<?php
+
+
+
+	?>
+</div>
+
+
+
+</div> <!-- FIN div tabcontent s-->
+
+
+
+<script>
+
+$(document).ready(function(){
+
+var $cropped = $('#cropped'),
+    $mdp = $('#mdp'),
+    $confirmation = $('#confirmation'),
+    $mail = $('#mail'),
+    $envoi = $('#envoi'),
+    $reset = $('#rafraichir'),
+    $erreur = $('#erreur'),
+    $champ = $('.champ');
+
+});
+
+$champ.keyup(function(){
+    if($(this).val().length < 5){ // si la chaîne de caractères est inférieure à 5
+        $(this).css({ // on rend le champ rouge
+            borderColor : 'red',
+	    color : 'red'
+        });
+     }
+     else{
+         $(this).css({ // si tout est bon, on le rend vert
+	     borderColor : 'green',
+	     color : 'green'
+	 });
+     }
+});
+
+</script>
+
+
+
+
+
+
+
+</html>

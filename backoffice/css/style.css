@@ -1,0 +1,325 @@
+
+
+body
+{
+    font-family: 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+    color: #999999;
+    word-wrap:break-word;
+    margin: 3em;
+}
+
+#conn{
+	font-style: italic;
+	font-size: 12px;
+}
+
+
+.tab-content{
+	margin-top: 1em;
+	margin-left: 1em;
+}
+
+a, a:link, a:visited {
+  text-decoration: none;
+
+}
+.nav-item a {
+	color: gray;
+}
+.nav-item a:hover{
+	color: #a5cb21;
+}
+.nav-item a:active {
+	color: #a5cb21;
+}
+
+a[aria-selected="true"]{
+  color: #a5cb21 !important;
+}
+
+
+#btnImport{
+
+}
+
+#btnImport:hover{
+	cursor: pointer;
+}
+
+#formGrpFile:hover, #formGrpFile label:hover, #formGrpFile input:hover{
+	cursor: pointer !important;
+}
+
+#formGrpFile{
+
+}
+#formFile{
+	width: 30em;
+	border : 1px dashed #999999;
+	padding: 1em; 
+	border-radius: 6px;
+}
+
+#formGrpFile{
+	/*
+	border : 1px solid gray;
+	padding:0.5em;
+	border-radius: 6px;
+	width: 22em;
+	
+	 */
+
+
+   
+
+}
+
+
+#erreurStaffInsert{
+    
+    text-align: center;
+    border: 1px solid #a5cb21;
+    width: 30em;
+    margin: auto;
+    border-radius: 6px;
+      color: #a5cb21;
+            
+}
+
+
+
+.newImport{
+
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+
+    display:inline-block;
+    cursor:pointer;
+    color: #999999;
+    font-family:Arial;
+    font-size:12px;
+    font-weight:bold;
+    padding:6px 24px;
+    text-decoration:underline !important;
+    text-shadow:0px 1px 0px #ffffff;
+
+
+}
+
+.btnImport{
+
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #999999;
+    display:inline-block;
+    cursor:pointer;
+    color: #999999;
+    font-family:Arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 24px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #ffffff;
+    background-color: #EFEFEF;
+
+}
+
+.btnImport:hover{
+
+	color: #a5cb21;
+	background-color: #EFEFEF;
+
+}
+#result{
+	margin-bottom: 3em;
+}
+/*
+table{
+	background-color: #EFEFEF;
+	  color: #222120;
+
+
+}
+
+table td, table th {
+
+	padding: 0.2em;
+
+
+}
+table tr td{
+
+}
+table th{
+	text-align: center;
+}
+
+*/
+
+.table td, .table th {
+
+    padding: 0.4em;
+}
+#tableListStaff tr:nth-child(even){
+
+    background:#CCCCCC;
+
+
+
+}
+#tableListStaff{
+    color:black;
+}
+#tableListStaff td{
+    max-height: 150px !important;
+}
+#tableListStaff, #tableInsert{
+
+}
+
+#tableInsert tr:nth-child(even){
+
+    background:#4CC673;
+    color: white;
+
+
+}
+#tableInsert tr:nth-child(odd){
+
+    background:#4CAF50;
+    color: white;
+
+
+}
+table thead, table thead tr{
+    background: #FFFFFF !important;
+    color: #999999 !important;
+}
+
+table td{
+
+}
+
+.btnToggle{
+
+	
+	-moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #999999;
+    display:inline-block;
+    cursor:pointer;
+    color: #999999;
+    font-family:Arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 24px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #ffffff;
+    background-color: #EFEFEF;
+    margin-bottom: 2em;
+
+
+}
+.btnToggle:hover{
+
+	color: #a5cb21;
+	background-color: #EFEFEF;
+
+}
+.btnToggle:active{
+
+		color: #a5cb21;
+	background-color: #EFEFEF;
+
+
+}
+
+#connectionForm{
+    width: 20em;
+}
+
+.sectionLog{
+
+}
+
+#result{
+
+}
+
+.config{
+    font-weight: bold;
+}
+
+.modal{
+    margin-top: 15em;
+}
+
+.nom_descr{
+    font-size: 1.3em;
+}
+
+.showUpdtForm, .showAddForm{
+    text-decoration:none;
+    color:#A5CB22;
+    font-size:1.2em;    
+}
+.showSupprForm{
+    color:red;
+    text-decoration:none;
+    font-size:1.2em;
+}
+
+.child .showUpdtForm, .child  .showAddForm, .child  .showSupprForm{
+    font-size: 0.8em;
+}
+
+
+
+
+
+
+
+h4 {
+  margin : 2em 2em;
+}
+.helpServices{
+    border: 1px solid #A5CB22;
+    border-radius: 6px;
+    padding: 10px;
+    max-width: 60%;
+}
+
+.row .col-md-6:nth-child(2n+0){
+    
+    border-bottom: 1px solid #CCCCCC;
+}
+.sendSuppr, .sendStaffSuppr {
+    -moz-box-shadow:inset 0px 1px 0px 0px #f29c93;   
+    box-shadow:inset 0px 1px 0px 0px #f29c93;  
+    background:linear-gradient(to bottom, #fe1a00 5%, #ce0100 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fe1a00', endColorstr='#ce0100',GradientType=0);
+    background-color:#fe1a00;
+    border-radius:6px;
+    border:1px solid #d83526;
+    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-family:Arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 24px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #b23e35;
+}
+.sendSuppr:hover, .sendStaffSuppr:hover {   
+    background:linear-gradient(to bottom, #ce0100 5%, #fe1a00 100%);
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ce0100', endColorstr='#fe1a00',GradientType=0);
+    background-color:#ce0100;
+}
+.sendSuppr:active, .sendStaffSuppr:active {
+    position:relative;
+    top:1px;
+}

@@ -1,0 +1,111 @@
+
+
+body
+{
+    font-family: 'Trebuchet MS', sans-serif;
+    font-size: 14px;
+    color: #999999;
+    word-wrap:break-word;
+    margin: 3em;
+}
+
+#conn{
+	font-style: italic;
+	font-size: 12px;
+}
+
+
+.tab-content{
+	margin-top: 1em;
+	margin-left: 1em;
+}
+
+a, a:link, a:visited {
+  text-decoration: none;
+
+}
+.nav-item a {
+	color: gray;
+}
+.nav-item a:hover{
+	color: #a5cb21;
+}
+.nav-item a:active {
+	color: #a5cb21;
+}
+
+a[aria-selected="true"]{
+  color: #a5cb21 !important;
+}
+
+
+#btnImport{
+
+}
+
+#btnImport:hover{
+	cursor: pointer;
+}
+
+#formGrpFile:hover, #formGrpFile label:hover, #formGrpFile input:hover{
+	cursor: pointer !important;
+}
+
+#formGrpFile{
+
+}
+#formFile{
+	width: 30em;
+	border : 1px dashed #999999;
+	padding: 1em; 
+	border-radius: 6px;
+}
+
+#formGrpFile{
+	/*
+	border : 1px solid gray;
+	padding:0.5em;
+	border-radius: 6px;
+	width: 22em;
+	
+	 */
+
+
+   
+
+}
+
+#btnImport{
+
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    border:1px solid #999999;
+    display:inline-block;
+    cursor:pointer;
+    color: #999999;
+    font-family:Arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 24px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #ffffff;
+    background-color: #EFEFEF;
+
+}
+
+#btnImport:hover{
+
+	color: #a5cb21;
+	background-color: #EFEFEF;
+
+}
+
+table td, table th {
+	border: 1px solid black;
+
+}
+table td{
+	padding: 2px;
+}
+
